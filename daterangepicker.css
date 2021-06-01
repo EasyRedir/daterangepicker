@@ -273,7 +273,8 @@
   vertical-align: middle;
 }
 
-.daterangepicker .drp-selected {
+.daterangepicker .drp-selected,
+.daterangepicker .drp-period {
   display: inline-block;
   font-size: 12px;
   padding-right: 8px;

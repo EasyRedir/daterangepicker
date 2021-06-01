@@ -54,6 +54,9 @@
         this.linkedCalendars = true;
         this.autoUpdateInput = true;
         this.alwaysShowCalendars = false;
+        this.supportPeriods = false;
+        this.dayPeriodMaxDays = 90;
+        this.period = 'day';
         this.ranges = {};
 
         this.opens = 'right';
@@ -82,6 +85,8 @@
         };
 
         this.callback = function() { };
+        this.startDateCallback = function(date, _t) { return date; };
+        this.endDateCallback = function(date, _t) { return date; };
 
         //some state information
         this.isShowing = false;
@@ -95,6 +100,15 @@
         //allow setting options with data attributes
         //data-api options will be overwritten with custom javascript options
         options = $.extend(this.element.data(), options);
+
+        if (typeof options.supportPeriods === 'boolean')
+          this.supportPeriods = options.supportPeriods;
+
+        if (typeof options.dayPeriodMaxDays === 'number')
+          this.dayPeriodMaxDays = options.dayPeriodMaxDays;
+
+        if (typeof options.period === 'string')
+          this.period = options.period;
 
         //html template for the picker UI
         if (typeof options.template !== 'string' && !(options.template instanceof $))
@@ -110,6 +124,7 @@
                     '<div class="calendar-time"></div>' +
                 '</div>' +
                 '<div class="drp-buttons">' +
+                    (this.supportPeriods ?  '<div class="drp-period">Period: <select class="mr-3 periodselect"><option value="day">Day</option><option value="month">Month</option></select></div>' : '') + 
                     '<span class="drp-selected"></span>' +
                     '<button class="cancelBtn" type="button"></button>' +
                     '<button class="applyBtn" disabled="disabled" type="button"></button> ' +
@@ -217,6 +232,9 @@
 
         if (typeof options.drops === 'string')
             this.drops = options.drops;
+
+        if (typeof options.period === 'string')
+          this.period = options.period;
 
         if (typeof options.showWeekNumbers === 'boolean')
             this.showWeekNumbers = options.showWeekNumbers;
@@ -364,6 +382,14 @@
             this.callback = cb;
         }
 
+        if (typeof options.startDateCallback === 'function') {
+          this.startDateCallback = options.startDateCallback;
+        }
+
+        if (typeof options.endDateCallback === 'function') {
+          this.endDateCallback = options.endDateCallback;
+        }
+
         if (!this.timePicker) {
             this.startDate = this.startDate.startOf('day');
             this.endDate = this.endDate.endOf('day');
@@ -423,6 +449,7 @@
             .on('click.daterangepicker', 'li', $.proxy(this.clickRange, this));
 
         this.container.find('.drp-buttons')
+            .on('change.daterangepicker', 'select.periodselect', $.proxy(this.periodApply, this))
             .on('click.daterangepicker', 'button.applyBtn', $.proxy(this.clickApply, this))
             .on('click.daterangepicker', 'button.cancelBtn', $.proxy(this.clickCancel, this));
 
@@ -452,10 +479,26 @@
 
         setStartDate: function(startDate) {
             if (typeof startDate === 'string')
-                this.startDate = moment(startDate, this.locale.format);
+                this.startDate = this.startDateCallback(moment(startDate, this.locale.format), this);
 
             if (typeof startDate === 'object')
-                this.startDate = moment(startDate);
+                this.startDate = this.startDateCallback(moment(startDate), this);
+
+            // Update start date if period support and day period
+            // exceeded.
+            const now = moment();
+            if (now.diff(this.startDate, 'days') > this.dayPeriodMaxDays) {
+              this.setPeriod('month', true);
+            } else if ($('select.periodselect').prop('disabled')) {
+              // if it is already disabled but we have selected
+              // a date that is less than the max days, set to day
+              // and not disabled.
+              this.setPeriod('day');
+            }
+            
+            // if the period is month, set the start date to start of month
+            if (this.period == 'month')
+              this.startDate = this.startDate.startOf('month'); 
 
             if (!this.timePicker)
                 this.startDate = this.startDate.startOf('day');
@@ -483,10 +526,13 @@
 
         setEndDate: function(endDate) {
             if (typeof endDate === 'string')
-                this.endDate = moment(endDate, this.locale.format);
+                this.endDate = this.endDateCallback(moment(endDate, this.locale.format), this);
 
             if (typeof endDate === 'object')
-                this.endDate = moment(endDate);
+                this.endDate = this.endDateCallback(moment(endDate), this);
+
+            if (this.period == 'month')
+              this.endDate = this.endDate.endOf('month'); 
 
             if (!this.timePicker)
                 this.endDate = this.endDate.endOf('day');
@@ -816,8 +862,9 @@
                         classes.push('active', 'end-date');
 
                     //highlight dates in-between the selected dates
-                    if (this.endDate != null && calendar[row][col] > this.startDate && calendar[row][col] < this.endDate)
+                    if (this.endDate != null && calendar[row][col] > this.startDate && calendar[row][col] < this.endDate) {
                         classes.push('in-range');
+                    }
 
                     //apply custom classes for this date
                     var isCustom = this.isCustomDate(calendar[row][col]);
@@ -1157,7 +1204,7 @@
 
             //if a new date range was selected, invoke the user callback function
             if (!this.startDate.isSame(this.oldStartDate) || !this.endDate.isSame(this.oldEndDate))
-                this.callback(this.startDate.clone(), this.endDate.clone(), this.chosenLabel);
+                this.callback(this.startDate.clone(), this.endDate.clone(), this.chosenLabel, this.period);
 
             //if picker is attached to a text input, update it
             this.updateElement();
@@ -1257,7 +1304,11 @@
             var row = title.substr(1, 1);
             var col = title.substr(3, 1);
             var cal = $(e.target).parents('.drp-calendar');
-            var date = cal.hasClass('left') ? this.leftCalendar.calendar[row][col] : this.rightCalendar.calendar[row][col];
+            var date = (cal.hasClass('left') ? this.leftCalendar.calendar[row][col] : this.rightCalendar.calendar[row][col]).clone();
+
+            if (this.startDate && !this.endDate && this.period == 'month') {
+              date = date.endOf('month');
+            }
 
             //highlight the dates between the start date and the date being hovered as a potential end date
             var leftCalendar = this.leftCalendar;
@@ -1395,6 +1446,27 @@
                 }
                 this.showCalendars();
             }
+        },
+
+        periodApply: function(e) {
+          if (this.period == $(e.currentTarget).val())
+            return;
+
+          this.period = $(e.currentTarget).val();
+          
+          if (this.startDate && this.period == 'month') {
+            this.startDate = this.startDate.startOf('month')
+          }
+
+          if (this.endDate && this.period == 'month')
+            this.endDate = this.endDate.endOf('month')
+
+          this.updateCalendars();
+        },
+
+        setPeriod: function(period, disable = false) {
+          $('select.periodselect').val(period).change();
+          $('select.periodselect').prop('disabled', disable);
         },
 
         clickApply: function(e) {
