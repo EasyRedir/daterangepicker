@@ -55,6 +55,7 @@
         this.autoUpdateInput = true;
         this.alwaysShowCalendars = false;
         this.supportPeriods = false;
+        this.periodLabel = 'Period: ';
         this.dayPeriodMaxDays = 90;
         this.period = 'day';
         this.ranges = {};
@@ -110,6 +111,9 @@
         if (typeof options.period === 'string')
           this.period = options.period;
 
+        if (typeof options.periodLabel === 'string')
+          this.periodLabel = options.periodLabel;
+
         //html template for the picker UI
         if (typeof options.template !== 'string' && !(options.template instanceof $))
             options.template =
@@ -124,7 +128,7 @@
                     '<div class="calendar-time"></div>' +
                 '</div>' +
                 '<div class="drp-buttons">' +
-                    (this.supportPeriods ?  '<div class="drp-period">Period: <select class="mr-3 periodselect"><option value="day">Day</option><option value="month">Month</option></select></div>' : '') + 
+                    (this.supportPeriods ?  '<div class="drp-period">' + this.periodLabel + ' <select class="mr-3 periodselect"><option value="day">Day</option><option value="month">Month</option></select></div>' : '') + 
                     '<span class="drp-selected"></span>' +
                     '<button class="cancelBtn" type="button"></button>' +
                     '<button class="applyBtn" disabled="disabled" type="button"></button> ' +
