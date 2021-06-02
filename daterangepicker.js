@@ -1475,14 +1475,16 @@
 
         clickApply: function(e) {
             this.hide();
-            this.element.trigger('apply.daterangepicker', this);
+            var event = new CustomEvent('apply.daterangepicker', {detail: this});
+            this.element[0].dispatchEvent(event);
         },
 
         clickCancel: function(e) {
             this.startDate = this.oldStartDate;
             this.endDate = this.oldEndDate;
             this.hide();
-            this.element.trigger('cancel.daterangepicker', this);
+            var event = new CustomEvent('cancel.daterangepicker', {detail: this});
+            this.element[0].dispatchEvent(event);
         },
 
         monthOrYearChanged: function(e) {
