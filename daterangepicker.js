@@ -109,7 +109,7 @@
           this.dayPeriodMaxDays = options.dayPeriodMaxDays;
 
         if (typeof options.period === 'string')
-          this.period = options.period;
+          this.setPeriod(options.period, false);
 
         if (typeof options.periodLabel === 'string')
           this.periodLabel = options.periodLabel;
@@ -128,7 +128,7 @@
                     '<div class="calendar-time"></div>' +
                 '</div>' +
                 '<div class="drp-buttons">' +
-                    (this.supportPeriods ?  '<div class="drp-period">' + this.periodLabel + ' <select class="mr-3 periodselect"><option value="day">Day</option><option value="month">Month</option></select></div>' : '') + 
+                    (this.supportPeriods ?  '<div class="drp-period">' + this.periodLabel + ' <select class="mr-3 periodselect"><option value="day" ' + (this.period == 'day' ? 'selected' : '') + '>Day</option><option value="month" ' + (this.period == 'month' ? 'selected' : '') + '>Month</option></select></div>' : '') + 
                     '<span class="drp-selected"></span>' +
                     '<button class="cancelBtn" type="button"></button>' +
                     '<button class="applyBtn" disabled="disabled" type="button"></button> ' +
@@ -1469,13 +1469,14 @@
         },
 
         setPeriod: function(period, disable = false) {
+          this.period = period;
           $('select.periodselect').val(period).change();
           $('select.periodselect').prop('disabled', disable);
         },
 
         clickApply: function(e) {
             this.hide();
-            var event = new CustomEvent('apply.daterangepicker', {detail: this});
+            var event = new CustomEvent('apply.daterangepicker', {bubbles: true, cancelable: true, detail: this});
             this.element[0].dispatchEvent(event);
         },
 
