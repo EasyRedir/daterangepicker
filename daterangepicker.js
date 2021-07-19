@@ -368,7 +368,7 @@
                 elem.innerHTML = range;
                 var rangeHtml = elem.value;
 
-                this.ranges[rangeHtml] = [start, end];
+                this.ranges[rangeHtml] = [start, end, options.ranges[range][2]];
             }
 
             var list = '<ul>';
@@ -1263,6 +1263,10 @@
                 var dates = this.ranges[label];
                 this.startDate = dates[0];
                 this.endDate = dates[1];
+
+                if (dates[2]) {
+                  this.setPeriod(dates[2]);
+                }
 
                 if (!this.timePicker) {
                     this.startDate.startOf('day');
