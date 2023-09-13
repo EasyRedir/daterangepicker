@@ -14,7 +14,7 @@ export default class DateRangePicker {
   constructor(element, options, cb) {
     //default settings for options
     this.parentEl = 'body';
-    this.element = $(element);
+    this.element = jquery(element);
     this.startDate = moment().startOf('day');
     this.endDate = moment().endOf('day');
     this.minDate = false;
@@ -116,8 +116,8 @@ export default class DateRangePicker {
         '</div>' +
         '</div>';
 
-    this.parentEl = (options.parentEl && $(options.parentEl).length) ? $(options.parentEl) : $(this.parentEl);
-    this.container = $(options.template).appendTo(this.parentEl);
+    this.parentEl = (options.parentEl && jquery(options.parentEl).length) ? jquery(options.parentEl) : jquery(this.parentEl);
+    this.container = jquery(options.template).appendTo(this.parentEl);
 
     //
     // handle all the possible options overriding defaults
@@ -294,8 +294,8 @@ export default class DateRangePicker {
 
     //if no start/end dates set, check if an input element contains initial values
     if (typeof options.startDate === 'undefined' && typeof options.endDate === 'undefined') {
-      if ($(this.element).is(':text')) {
-        var val = $(this.element).val(),
+      if (jquery(this.element).is(':text')) {
+        var val = jquery(this.element).val(),
           split = val.split(this.locale.separator);
 
         start = end = null;
@@ -470,7 +470,7 @@ export default class DateRangePicker {
     const now = moment();
     if (now.diff(this.startDate, 'days') > this.dayPeriodMaxDays) {
       this.setPeriod('month', true);
-    } else if ($('select.periodselect').prop('disabled')) {
+    } else if (jquery('select.periodselect').prop('disabled')) {
       // if it is already disabled but we have selected
       // a date that is less than the max days, set to day
       // and not disabled.
@@ -1054,7 +1054,7 @@ export default class DateRangePicker {
       containerTop,
       drops = this.drops;
 
-    var parentRightEdge = $(window).width();
+    var parentRightEdge = jquery(window).width();
     if (!this.parentEl.is('body')) {
       parentOffset = {
         top: this.parentEl.offset().top - this.parentEl.scrollTop(),
@@ -1091,7 +1091,7 @@ export default class DateRangePicker {
 
     if (this.opens == 'left') {
       var containerRight = parentRightEdge - this.element.offset().left - this.element.outerWidth();
-      if (containerWidth + containerRight > $(window).width()) {
+      if (containerWidth + containerRight > jquery(window).width()) {
         this.container.css({
           top: containerTop,
           right: 'auto',
@@ -1113,7 +1113,7 @@ export default class DateRangePicker {
           right: 'auto',
           left: 9
         });
-      } else if (containerLeft + containerWidth > $(window).width()) {
+      } else if (containerLeft + containerWidth > jquery(window).width()) {
         this.container.css({
           top: containerTop,
           left: 'auto',
@@ -1128,7 +1128,7 @@ export default class DateRangePicker {
       }
     } else {
       var containerLeft = this.element.offset().left - parentOffset.left;
-      if (containerLeft + containerWidth > $(window).width()) {
+      if (containerLeft + containerWidth > jquery(window).width()) {
         this.container.css({
           top: containerTop,
           left: 'auto',
@@ -1151,7 +1151,7 @@ export default class DateRangePicker {
     this._outsideClickProxy = jquery.proxy(function(e) { this.outsideClick(e); }, this);
 
     // Bind global datepicker mousedown for hiding and
-    $(document)
+    jquery(document)
       .on('mousedown.daterangepicker', this._outsideClickProxy)
     // also support mobile devices
       .on('touchend.daterangepicker', this._outsideClickProxy)
@@ -1161,7 +1161,7 @@ export default class DateRangePicker {
       .on('focusin.daterangepicker', this._outsideClickProxy);
 
     // Reposition the picker if the window is resized while it's open
-    $(window).on('resize.daterangepicker', jquery.proxy(function(e) { this.move(e); }, this));
+    jquery(window).on('resize.daterangepicker', jquery.proxy(function(e) { this.move(e); }, this));
 
     this.oldStartDate = this.startDate.clone();
     this.oldEndDate = this.endDate.clone();
@@ -1190,8 +1190,8 @@ export default class DateRangePicker {
     //if picker is attached to a text input, update it
     this.updateElement();
 
-    $(document).off('.daterangepicker');
-    $(window).off('.daterangepicker');
+    jquery(document).off('.daterangepicker');
+    jquery(window).off('.daterangepicker');
     this.container.hide();
     this.element.trigger('hide.daterangepicker', this);
     this.isShowing = false;
@@ -1206,7 +1206,7 @@ export default class DateRangePicker {
   }
 
   outsideClick(e) {
-    var target = $(e.target);
+    var target = jquery(e.target);
     // if the page is clicked anywhere except within the daterangerpicker/button
     // itself then call this.hide()
     if (
@@ -1257,7 +1257,7 @@ export default class DateRangePicker {
   }
 
   clickPrev(e) {
-    var cal = $(e.target).parents('.drp-calendar');
+    var cal = jquery(e.target).parents('.drp-calendar');
     if (cal.hasClass('left')) {
       this.leftCalendar.month.subtract(1, 'month');
       if (this.linkedCalendars)
@@ -1269,7 +1269,7 @@ export default class DateRangePicker {
   }
 
   clickNext(e) {
-    var cal = $(e.target).parents('.drp-calendar');
+    var cal = jquery(e.target).parents('.drp-calendar');
     if (cal.hasClass('left')) {
       this.leftCalendar.month.add(1, 'month');
     } else {
@@ -1283,12 +1283,12 @@ export default class DateRangePicker {
   hoverDate(e) {
 
     //ignore dates that can't be selected
-    if (!$(e.target).hasClass('available')) return;
+    if (!jquery(e.target).hasClass('available')) return;
 
-    var title = $(e.target).attr('data-title');
+    var title = jquery(e.target).attr('data-title');
     var row = title.substr(1, 1);
     var col = title.substr(3, 1);
-    var cal = $(e.target).parents('.drp-calendar');
+    var cal = jquery(e.target).parents('.drp-calendar');
     var date = (cal.hasClass('left') ? this.leftCalendar.calendar[row][col] : this.rightCalendar.calendar[row][col]).clone();
 
     if (this.startDate && !this.endDate && this.period == 'month') {
@@ -1303,18 +1303,18 @@ export default class DateRangePicker {
       this.container.find('.drp-calendar tbody td').each(function(index, el) {
 
         //skip week numbers, only look at dates
-        if ($(el).hasClass('week')) return;
+        if (jquery(el).hasClass('week')) return;
 
-        var title = $(el).attr('data-title');
+        var title = jquery(el).attr('data-title');
         var row = title.substr(1, 1);
         var col = title.substr(3, 1);
-        var cal = $(el).parents('.drp-calendar');
+        var cal = jquery(el).parents('.drp-calendar');
         var dt = cal.hasClass('left') ? leftCalendar.calendar[row][col] : rightCalendar.calendar[row][col];
 
         if ((dt.isAfter(startDate) && dt.isBefore(date)) || dt.isSame(date, 'day')) {
-          $(el).addClass('in-range');
+          jquery(el).addClass('in-range');
         } else {
-          $(el).removeClass('in-range');
+          jquery(el).removeClass('in-range');
         }
 
       });
@@ -1324,12 +1324,12 @@ export default class DateRangePicker {
 
   clickDate(e) {
 
-    if (!$(e.target).hasClass('available')) return;
+    if (!jquery(e.target).hasClass('available')) return;
 
-    var title = $(e.target).attr('data-title');
+    var title = jquery(e.target).attr('data-title');
     var row = title.substr(1, 1);
     var col = title.substr(3, 1);
-    var cal = $(e.target).parents('.drp-calendar');
+    var cal = jquery(e.target).parents('.drp-calendar');
     var date = cal.hasClass('left') ? this.leftCalendar.calendar[row][col] : this.rightCalendar.calendar[row][col];
 
     //
@@ -1434,10 +1434,10 @@ export default class DateRangePicker {
   }
 
   periodApply(e) {
-    if (this.period == $(e.currentTarget).val())
+    if (this.period == jquery(e.currentTarget).val())
       return;
 
-    this.period = $(e.currentTarget).val();
+    this.period = jquery(e.currentTarget).val();
 
     if (this.startDate && this.period == 'month') {
       this.startDate = this.startDate.startOf('month')
@@ -1451,8 +1451,8 @@ export default class DateRangePicker {
 
   setPeriod(period, disable = false) {
     this.period = period;
-    $('select.periodselect').val(period).change();
-    $('select.periodselect').prop('disabled', disable);
+    jquery('select.periodselect').val(period).change();
+    jquery('select.periodselect').prop('disabled', disable);
   }
 
   clickApply(e) {
@@ -1470,7 +1470,7 @@ export default class DateRangePicker {
   }
 
   monthOrYearChanged(e) {
-    var isLeft = $(e.target).closest('.drp-calendar').hasClass('left'),
+    var isLeft = jquery(e.target).closest('.drp-calendar').hasClass('left'),
       leftOrRight = isLeft ? 'left' : 'right',
       cal = this.container.find('.drp-calendar.'+leftOrRight);
 
@@ -1513,7 +1513,7 @@ export default class DateRangePicker {
 
   timeChanged(e) {
 
-    var cal = $(e.target).closest('.drp-calendar'),
+    var cal = jquery(e.target).closest('.drp-calendar'),
       isLeft = cal.hasClass('left');
 
     var hour = parseInt(cal.find('.hourselect').val(), 10);
@@ -1625,7 +1625,7 @@ export default class DateRangePicker {
 jquery.fn.daterangepicker = function(options, callback) {
     var implementOptions = jquery.extend(true, {}, jquery.fn.daterangepicker.defaultOptions, options);
     this.each(function() {
-        var el = $(this);
+        var el = jquery(this);
         if (el.data('daterangepicker'))
             el.data('daterangepicker').remove();
         el.data('daterangepicker', new DateRangePicker(el, implementOptions, callback));
